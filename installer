@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# INIT
+function runner() {
+    local package="$1"
+    local action="$2:-install"
+    
+    if [ -f installers/ ]; then
+        bash installers/$package/$action.sh
+    else
+        curl -fsSL "https://raw.githubusercontent.com/pschur/installer/main/$package/$action.sh" | bash
+    fi
+}
+
+function checkCurl() {
+    command -v curl &> /dev/null && return
+    if ! which curl &> /dev/null; then
+        sudo apt update
+        sudo apt upgrade -y
+        sudo apt install -y curl ca-certificates gnutls-utils libgcrypt20-dev software-properties-common python3-dev
+    fi
+}
+
+function checkBsc() {
+    if [ ! -f /usr/local/lib/simple_curses.sh ]; then
+        echo "BSC not found. Installing ..."
+
+        runner "bsc" "install"
+    fi
+}
+
+checkCurl
+checkBsc
+source /usr/local/lib/simple_curses.sh
+
+
+# INTERFACE
+
+sudo apt update -y > log
+
+clear
+
+main(){
+   window "Update" "cyan"
+   append_file "log"
+   endwin
+}
+
+bsc_none_reload
